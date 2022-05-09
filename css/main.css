@@ -1,0 +1,278 @@
+
+.table-data{
+    text-align: left;
+    padding: 0 24px;
+    margin: 0;
+}
+tr th{
+    background-color: rgb(94, 222, 222);
+}
+table tr *{
+   padding: 8px 4px;
+}
+.th-uid,.th-name,.th-phone{
+    width: 20%;
+}
+.th-id{
+    width:40px;
+}
+.toolheader{
+    background-color: #42C2FF;
+}
+.toolfooter{
+    display: flex;
+    justify-content: center;
+    padding: 8px 0;
+
+}
+.search{
+    display: flex;
+}
+
+.form-control{
+    padding-left: 32px;
+}
+.search-data i{
+    position: absolute;
+    z-index: 2;
+    display: block;
+    width: 2.375rem;
+    height: 2.375rem;
+    line-height: 2.375rem;
+    text-align: center;
+    pointer-events: none;
+    color: #aaa;
+    font-size: 16px;
+}
+.checkboxes{
+    display: flex !important;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    color: #42c2ff;
+    font-weight: 600;
+    position: relative;
+}
+.checkboxes li{
+    margin-right: 20px ;
+    padding: 8px 0;
+    font-size: 20px;
+    cursor: pointer;
+}
+.md-title{
+    color: #fff;
+}
+.checkboxes .li-slide{
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    background-color: #42C2FF;
+    height: 4px;
+    bottom: 0;
+}
+.btn-style-slide{
+    padding: 4px 8px;
+}
+.curent-page{
+    margin: 0 12px;
+}
+#curent-page{
+    display: none;
+}
+.overlay{
+    background: white;
+    text-align: center;
+}
+.overlay-content p{
+    background: white;
+    text-align: center;
+    padding: 12px 8px; 
+    margin: 0;
+}
+.md-toolbar-tools{
+    border-radius: 4px;
+}
+.table-content{
+    display: none;
+}
+
+md-toolbar{
+    background-color: #fff;
+    min-height: 0;
+}
+.form-code{
+    padding: 4px 8px;
+}
+#formKey .form-select{
+    max-width: 120px;
+}
+form .form-control{
+    padding-left: 8px;
+}
+.keyWord{
+    display: flex;
+    flex-wrap: wrap;
+    margin: 12px 8px;
+}
+.keyWord div{
+    display: flex;
+    font-size: 16px;
+    padding: 4px;
+    color: #fff;
+    border-radius: 4px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  
+}
+.keyNum{
+    background-color: #FF515B;
+}
+.keyString{
+    background-color: #00AE63;
+}
+.keyWord i{
+    cursor: pointer;
+    position: relative;
+    bottom: 2px;
+    left: 1px;
+    font-size: 10px;
+}
+#keyName{
+    padding-left: 8px;
+}
+
+.th-id{
+   width: 5%;
+}
+.th-fromat,.th-limit{
+   width: 10%;
+}
+.th-product{
+   width: 40%;
+}
+.th-code{
+    max-width: 25%;
+}
+
+.th-price{
+    width: 10%;
+}
+.th-fromat i{
+  font-size: 12px;
+}
+#filter-format{
+    cursor: pointer;
+}
+.bg-filter{
+    color: #0d6efd;
+}
+#pending,#manage,#view{
+    display: none;
+}
+code{
+    font-family: "Segoe UI";
+    position:relative;
+    cursor: default;
+    margin-bottom: 2px;
+    cursor: copy;
+
+}
+code:hover{
+    background : #ffffff;
+    border-radius: 4px;
+}
+code:hover .describe{
+    display: block;
+}
+code::after{
+    position: absolute;
+    content: "";
+    width: 40px;
+    left: 0;
+    height: 10px;
+    bottom: -4px;
+}
+.describe{
+    left: 0px;
+    box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+    background-color: #ffffff;
+    z-index: 999;
+    display: none;
+    width: 200px;
+    border-radius: 2px;
+    position: absolute;
+    top: calc( 100% + 2px );
+    color: #000;
+    padding: 0;
+}
+.describe h3{
+    color: #FF515B;
+    font-size:16px;
+    margin: 0;
+}
+.describe h4{
+    font-size:16px;
+    margin: 0;
+    padding: 0;
+    padding-left: 4px;
+    color: #0d6efd;
+}
+.describe p{
+    font-size:12px;
+    color: #0d6efd;
+    margin: 0;
+    font-weight: 400;
+}
+md-content{
+   overflow: unset;
+}
+.table-hover tr:hover{
+    cursor: default;
+    background-color: #b8e9ff;
+}
+
+.show-all{
+    position: relative;
+}
+#pending .table-hover tr i {
+    top: 50%;
+    transform: translateY(-50%);
+    position: absolute;
+    right: 40px;
+    cursor: pointer;
+    color: #FF515B;
+    display:none;
+ 
+}
+#pending .table-hover tr:hover i{
+ display:block;
+}
+#selectCode{
+    height: 38px;
+}
+.select-code{
+    min-width: 80px;
+}
+.save-code,.select-code{
+    margin-left: 12px;
+}
+.mKeep{
+    width: 80px;
+}.mKeep input{
+    margin-left: 8px;
+}
+.mID{
+    width: 40px;
+}
+.mDescribe{
+    margin: 0;
+    padding-left: 8px;
+    padding-bottom: 8px;
+    background: #fff;
+}
+.mDescribe span{
+   font-weight: 600;
+}
+.md-title span{
+    font-size:12px
+}

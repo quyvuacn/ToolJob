@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order Checker</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <title>Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"/>
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/select.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/jszip.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
+  <script type="text/javascript" src="./js/sheet/xlsx.full.min.js"></script>
+  <script type="text/javascript" src="./js/sheet/Blob.js"></script>
+  <script type="text/javascript" src="./js/sheet/FileSaver.js"></script>
+</head>
+<body>
+    <md-toolbar class="md-whiteframe-1dp">
+        <div class="md-toolbar-tools toolheader">
+            <div class="md-title">Order Checker <span>by Quy Vu</span></div>
+        </div>
+    </md-toolbar>
+
+    <md-content class="container">
+
+        <md-card>
+            <ul class="checkboxes">
+                <li class="select active" id="select-code">Code</li>
+                <li class="select" id="select-view">View</li>
+                <li class="select" id="select-manage">Manage</li>
+                <li class="select" id="select-pending">Pending</li>
+                <li class="li-slide"></li>
+            </ul>
+        </md-card>
+
+
+        </div>
+
+        <md-card id="view" class="tool">
+            <md-toolbar class="md-table-toolbar md-default">
+                <div class="md-toolbar-tools">
+                    <div class="search">
+                        <!-- <span>Nutrition</span> -->
+                        <div class="search-data">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" class="form-control" placeholder="Search" id="search-view">
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" id="importView">Import</button>
+                        <button class="btn btn-primary" id="exportView" onclick="controller.ExportView(&#39;xlsx&#39;)">Export</button>
+                        <button class="btn btn-secondary" id="btnFormatView">Format</button>
+                    </div>
+                   
+                </div>
+            </md-toolbar>
+
+            <div class="view overlay-content">
+                <p>Dữ liệu chưa được tải lên  
+                </p>
+            </div>
+
+            <div class="table-content">
+                <table id="table-view" class="table table-striped table-data table-hover">
+                </table>
+    
+                <div class="toolfooter">
+                    <div>
+                        <button class="btn btn-outline-info btn-style-slide" id="prev-page"><i class="fa-solid fa-angle-left"></i></button>
+                       <span class="curent-page">1</span>
+                        
+                        <button class="btn btn-outline-info btn-style-slide" id="next-page"><i class="fa-solid fa-angle-right"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            
+           
+        </md-card>
+
+        <md-card id="code" class="tool">
+            <md-toolbar class="md-table-toolbar md-default">
+                <div class="md-toolbar-tools">
+                    <div class="search" >
+                        <!-- <span>Nutrition</span> -->
+                        <div class="search-data">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" class="form-control" placeholder="Search" id="search-code">
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" id="importCode">Import</button>
+                        <button class="btn btn-secondary" id="formatCode">Format</button>
+                    </div>
+                   
+                </div>
+            </md-toolbar>
+
+        
+
+            <md-toolbar>
+                <div class="input-group form-code" id="formKey">
+                    <input type="text" class="form-control" id="keyName">
+                    <select class="form-select" id="isNumber" type="number">
+                      <option value="1">Number</option>
+                      <option value="0">String</option>
+                    </select>
+                    <button class="btn btn-primary" id="btnAddKey" type="submit">ADD</button>
+
+                  </div>
+            </md-toolbar>
+            <md-toolbar class="d-flex">
+                <div class="keyWord" id="keyWord">
+                    
+                </div>
+            </md-toolbar>
+            <div class="table-content d-block">
+                <table id="table-code" class="table table-striped table-data table-hover">
+                    <tr>
+                        <th class="th-id">ID</th>
+                        <th class="th-product">Product</th>
+                        <th class="th-code">Code</th>
+                        <th class="th-price">Price</th>
+                        <th class="th-fromat">Fromat<i class="fa-solid fa-filter" id="filter-format"></i></th>
+                        <!-- <th class="th-limit">Limit</th> -->
+                    </tr>            
+                </table>
+            </div>
+
+            
+           
+        </md-card>
+
+        <md-card id="pending" class="tool">
+            <md-toolbar class="md-table-toolbar md-default">
+                <div class="md-toolbar-tools">
+                    <div class="search">
+                        <!-- <span>Nutrition</span> -->
+                        <div class="search-data">
+                            <!-- <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" class="form-control" placeholder="Search" id="search-pending"> -->
+                        </div>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" id="exportPending" onclick="controller.ExportPending(&#39;xlsx&#39;)">Export</button>
+                    </div>
+                   
+                </div>
+            </md-toolbar>
+
+            <div class="view overlay-content">
+                <p>Chưa có dữ liệu
+                </p>
+            </div>
+
+            <div class="table-content">
+                <table id="table-pending" class="table table-striped table-data table-hover">
+                </table>
+            </div>
+
+            
+           
+        </md-card>
+
+        <md-card id="manage" class="tool">
+            <md-toolbar class="md-table-toolbar md-default">
+                <div class="md-toolbar-tools">
+                    <div class="search">
+                        <div class="search-data">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" class="form-control" placeholder="Search" id="search-manage">
+                        </div>
+                        <div class="select-code">
+                            <select class="form-select form-select-sm js-example-basic-single" name="codeFormat" id="selectCode">
+                               
+                            </select>
+                        </div>
+                        <div class="save-code">
+                            <button class="btn btn-primary" id="keepManagement">Keep</button>
+                        </div>
+                    </div>
+                    <div>
+                        <!-- <button class="btn btn-primary" id="exportManage" onclick="controller.ExportManager(&#39;xlsx&#39;)">Export</button> -->
+                    </div>
+                   
+                </div>
+            </md-toolbar>
+
+            <div class="table-content d-block">
+                <p class="mDescribe"> <span> Describe:</span>  </p>
+                <table id="table-manage" class="table table-striped table-data table-hover">
+                    <tr>
+                        <th class="mID">ID</th>
+                        <th>UID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th class="mKeep">All<input class="form-check-input" type="checkbox" id="selectAll" checked></th>
+                    </tr>
+                </table>
+            </div>
+
+            
+           
+        </md-card>
+
+
+
+
+
+    </md-content>
+   
+
+  
+  
+  
+</body>
+</html>
+<!-- partial -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>  
+<script src="./js/controller.js"></script>
+<script  src="./js/page.js"></script>
+<script src="./js/select2.js"></script>
+</body>
+</html>

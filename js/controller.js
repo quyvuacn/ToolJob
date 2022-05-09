@@ -1,0 +1,780 @@
+importView = document.createElement("input")
+importView.type = "file"
+importView.accept = ".xlsx"
+document.querySelector("#importView").addEventListener("click", function(){
+    importView.click()
+}) 
+
+importCode = document.createElement("input")
+importCode.type = "file"
+importCode.accept = ".xlsx"
+document.querySelector("#importCode").addEventListener("click", function(){
+    importCode.click()
+}) 
+
+
+function newController(){
+    return controller.start()
+}
+const controller ={
+    dataView: [],
+    dataCode: [],
+    keyWords: [],
+    keyFormat : [],
+    dataResolve: [],
+    customers: [],
+    pendingViews: [],
+    pendingCode: [],
+    importView,
+    keySearchView: "",
+    keySearchCode:"",
+    filterCode: false,
+    currentPage:1,
+    isformatCode : false,
+    isRenderView : false,
+    isformatView: false,
+    pages: null,
+    selectManager : '',
+    start: function(){   
+        importCode.addEventListener("change", function(e){
+            e.targetPage = "code"
+            controller.fileReader(e)
+        })
+        importView.addEventListener("change", function(e){
+            e.targetPage = "view"
+            controller.fileReader(e)
+        })
+        document.getElementById("next-page").addEventListener("click",function(){
+            if(controller.currentPage==controller.pages) return
+            controller.currentPage++
+            controller.renderDataViewTwo()
+        })
+        document.getElementById("prev-page").addEventListener("click",function(){
+            if(controller.currentPage==1) return
+            controller.currentPage--
+            controller.renderDataViewTwo()
+        })
+        btnFormatView.addEventListener("click",function(){
+            if(controller.keyWords.length && controller.dataCode.length && controller.dataView.length && controller.pendingCode==0){
+                if(!controller.isRenderView){
+                    controller.renderDataView() 
+                }else{
+                    alert("ok")
+                }
+                controller.isRenderView = true 
+                controller.isformatCode = true
+            }else{
+                if(controller.pendingCode>0){
+                    alert("Chưa nhập hết các từ khóa")
+                    return 
+                }
+                alert("Chưa có dữ liệu về các từ khóa hoặc mặt hàng")
+            }
+            controller.renderDataSelectManager()
+        })
+        document.querySelector("#formatCode").addEventListener("click",function(){
+            if(controller.dataCode.length){
+                controller.renderDataCode()
+                controller.isformatCode =true
+            }else{
+                alert("Các từ khóa tìm kiếm chưa được thêm vào hoặc chưa tải lên file mặt hàng")
+            }
+        })
+        btnAddKey.addEventListener("click", function(){
+            controller.addKey()
+            controller.isformatCode =true
+        })
+        keyName.addEventListener("keydown",function(e){
+            if(e.keyCode ===13){
+                controller.addKey()
+                controller.isformatCode =true
+            }
+        })
+        this.removeKey()
+        document.querySelector("#table-code").addEventListener("click",function(e){
+            if(e.target.closest("#filter-format")){             
+                if(controller.dataCode.length){
+                    controller.filterCode = controller.filterCode== false ? true : false    
+                    controller.renderDataCode()     
+                    if(controller.filterCode){
+                        $("#filter-format").addClass("bg-filter")
+                    } 
+                   
+                }
+            }
+        })
+        document.querySelector("#search-view").addEventListener("keyup", function(e){
+            keySearch = e.target.value.trim()
+            this.currentPage = 1
+            controller.keySearchView = controller.xoa_dau(keySearch).toLowerCase()
+            controller.renderDataViewTwo()  
+        })
+        document.querySelector("#search-code").addEventListener("keyup", function(e){
+            keySearch = e.target.value.trim()
+            controller.keySearchCode = controller.xoa_dau(keySearch).toLowerCase()
+            controller.renderDataCode()
+        })
+
+        document.querySelector("#table-view").addEventListener("mouseover",function(e){
+            if(e.target.closest("code")){
+                let keyTarget = e.target.closest("code")
+                let cartItem = keyTarget.firstChild.textContent
+                let describeItem = keyTarget.firstElementChild
+                let describe = controller.dataCode.find(e=>e.nameFormat.replaceAll(" ","") == cartItem.replaceAll(" ",""))
+                describe = describe.name
+                describeItem.innerHTML = `
+                <h3>Click to delete</h3>
+                <h4>Describe:</h4>
+                <p>${describe}</p>
+                `
+                keyTarget.addEventListener("click",function(){
+                    let UID = keyTarget.className
+                    controller.customers = controller.customers.map(e=>{
+                        if(e.UID == UID){
+                            let index = e.cartFormat.indexOf(cartItem.replaceAll(" ",""))
+                            e.cart.splice(index,1)
+                            e.cartFormat.splice(index,1)
+                            e.cartExport.splice(index,1)
+                        }
+                        return e
+                        
+                    })
+                    controller.renderDataViewTwo()
+                })
+            }
+        })
+        document.querySelector("#table-pending").addEventListener("click", function(e){
+            if(e.target.closest("i")){
+                removeKey = e.target.closest("i")-''
+                controller.pendingViews.splice(removeKey,1)
+                controller.renderDataPending()
+
+            }
+        })
+        $('#selectCode').on('select2:select', function (e) {
+            controller.selectManager =  e.params.data.text
+            controller.renderDataSelectManager()
+        });
+
+
+
+    },
+    addKey(){
+        if(this.dataCode.length==0){
+            alert("Cần tải file lên trước")
+            return 
+        }
+        let newKeyWord = {
+            key: keyName.value,
+            isNumber : isNumber.value == 0 ? false : true
+        }
+        addTrue = controller.keyWords.find(e=>e.key == newKeyWord.key)
+        if(addTrue==undefined){
+            controller.keyWords.push(newKeyWord)
+            controller.keyWords =  controller.keyWords.filter(e=>e.key)
+            controller.renderDataCode()
+        }else{
+           console.log("key word đã tồn tại")
+        }    
+        let innerKeys =""
+        for(let i=0; i<controller.keyWords.length; i++){
+            let className = controller.keyWords[i].isNumber == true ? "keyNum" : "keyString"
+            innerKeys += `<div class="${className} itemKey">${controller.keyWords[i].key}<i class="fa-solid fa-xmark"></i></div>`
+        }
+        keyWord.innerHTML = innerKeys
+        keyName.value = ""
+        controller.renderDataCode()
+        
+     
+    },
+    removeKey(){
+        keyWord.addEventListener("click", function(e){
+            keyTarget = e.target.closest("i")
+            if(keyTarget){
+                key = keyTarget.parentNode.firstChild.textContent
+                controller.keyWords =  controller.keyWords.filter(e=>e.key != key)
+                let innerKeys =""
+                for(let i=0; i<controller.keyWords.length; i++){
+                    let className = controller.keyWords[i].isNumber == true ? "keyNum" : "keyString"
+                    innerKeys += `<div class="${className} itemKey">${controller.keyWords[i].key}<i class="fa-solid fa-xmark" id="d${i}"></i></div>`
+                }
+                keyWord.innerHTML = innerKeys
+
+            }
+        })
+    }
+    ,
+    fileReader(oEvent) {
+        let oFile = oEvent.target.files[0];
+        let reader = new FileReader();
+        reader.onload =function (e) {     
+            let data = e.target.result;
+            data = new Uint8Array(data);
+            let workbook = XLSX.read(data, {type: 'array'});
+            workbook.SheetNames.forEach(function (sheetName) {
+                let roa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1});
+                if (roa.length && oEvent.targetPage == "view") {
+                    controller.dataView=roa
+                }else if(roa.length && oEvent.targetPage == "code") {
+                    controller.dataCode = roa
+                }
+            });
+        };
+        reader.readAsArrayBuffer(oFile)
+    },
+    renderDataView(){
+        $(".table-content").show()
+        $(".overlay-content").hide()
+        controller.formatArray()  
+        dataView =  controller.customers    
+        let table = document.querySelector("#table-view")
+        mappTr = `  <tr>
+                        <th class="th-id">ID</th>
+                        <th class="th-uid">UID (${controller.customers.length})</th>
+                        <th class="th-name">Name</th>
+                        <th class="th-phone">Phone</th>
+                        <th>Cart</th>
+                    </tr>`
+        for(let i=10*(this.currentPage-1);i<=10*(this.currentPage)-1;i++){
+            let show = dataView[i].cartFormat.map(e=>{
+                return `
+                    <code class="${dataView[i].UID}">${e} <div class="describe ${dataView[i].UID}"></div> </code>
+                `
+            })
+            mappTr+= `<tr>
+                        <td>${i+1}</td>
+                        <td>${dataView[i].UID}</td>
+                        <td>${dataView[i].name}</td>
+                        <td>${dataView[i].phone.join(`  +  `)}</td>
+                        <td class="show-all">${show}</td>
+                     </tr>`
+        }
+        table.innerHTML = mappTr
+    },
+    xoa_dau(str) {
+        str = str.replace(/:|\.|\\|\/|,|:|;/g," ")
+        str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ|à̀|á|à̀|à/g, "a");
+        str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ|à̀|á|à̀|à/g, "a");
+        str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+        str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+        str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ|ó/g, "o");
+        str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+        str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+        str = str.replace(/đ/g, "d");
+        str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "a");
+        str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+        str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "i");
+        str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "o");
+        str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "u");
+        str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "y");
+        str = str.replace(/Đ/g, "d");
+      
+        return str;
+    },
+    formatKey(){
+        controller.keyFormat = controller.keyWords
+        for(let i = 0; i <this.keyWords.length; i++) {     
+           let keyFormat =this.keyFormat[i].key.split(" *").join("") 
+            if(this.keyFormat[i].isNumber){        
+                regExp = new RegExp(keyFormat+" *\\d+", "")
+                this.dataView = this.dataView.map(obj => {
+                    let cartFormat = obj.cartFormat.match(regExp) !=null ? obj.cartFormat.match(regExp)[0].replaceAll(" ",""): obj.cartFormat
+                    let formatView = cartFormat.length !=  obj.cart.length ? true : false
+                    return {
+                        ...obj,
+                        cartFormat: cartFormat.toLowerCase(),
+                        formatView: formatView
+                    }
+                }) 
+            }else{
+                regExp = new RegExp(keyFormat, "")
+                this.dataView = this.dataView.map(obj => {
+                    let cartFormat = obj.cartFormat.match(regExp) !=null ? obj.cartFormat.match(regExp)[0].replaceAll("  "," "): obj.cartFormat    
+                    let formatView = cartFormat.length !=  obj.cart.length ? true : false
+                    return {
+                        ...obj,
+                        cartFormat: cartFormat.toLowerCase(),
+                        formatView: formatView
+                    }
+                }) 
+            }
+        }
+        this.pendingViews = this.dataView.filter(e=>!e.formatView)
+        this.renderDataPending()
+    }
+    ,
+    formatArray(){ 
+        this.dataView = this.dataView.map((e)=>{
+            e=e.filter((item)=> item!=undefined)
+            return {
+                UID : e[2],
+                name : e[1],
+                phone : e[3],
+                cart : e[0],
+                cartFormat : controller.xoa_dau(e[0]).toLowerCase()
+            }
+        })
+        this.formatKey()
+        if(!controller.currentPage.length){   
+            this.customers = this.dataView.map(obj =>obj.UID)
+            this.customers = Array.from(new Set(this.customers))
+            this.customers = this.customers.map(customer =>{
+                return {
+                    UID: customer,
+                    name : "",
+                    phone : [],
+                    cart : [],
+                    cartFormat : [],
+                }
+            })
+            for(let i=0; i<this.customers.length; i++){
+               
+                let cartCustomer = this.dataView.filter(e=>e.UID == this.customers[i].UID && e.formatView);
+                let phone  = new Set()
+                let cart = new Set()
+                let cartFormat = new Set()
+
+                for (let j = 0; j <cartCustomer.length; j++) {
+                    let UID
+                    let name
+                    UID = cartCustomer[j].UID
+                    name = cartCustomer[j].name   
+                    phone.add(cartCustomer[j].phone)
+                    cart.add(cartCustomer[j].cart)
+                    cartFormat.add(cartCustomer[j].cartFormat)
+                    if(j==cartCustomer.length-1){
+                        this.customers[i] = {
+                            UID : UID,
+                            name : name,
+                            phone : [...phone],
+                            cart : [...cart],
+                            cartFormat: [...cartFormat],
+                            cartExport : []
+                        }
+                    }
+                }
+                for(let i = 0; i <this.customers.length; i++) {
+                    this.customers[i].cartExport = this.customers[i].cartFormat.map(e=>{
+                        let cart = this.dataCode.filter(item=>item.nameFormat==e)
+                        return cart[0]
+                    })
+                    this.customers[i].cartExport = this.customers[i].cartExport.map(e=>{
+                        if(e  == undefined){
+                            return 
+                        }
+                        return e.name  
+                    })
+
+                }
+               
+               
+            }
+               
+            this.customers = this.customers.filter(e=>e.cartFormat.length>0)
+        }
+        return this.dataView
+    },
+    renderDataCode(){
+        this.formatCode()
+        tableCode = document.querySelector("#table-code")
+        let dataCode
+        if(controller.filterCode){
+            dataCode = controller.dataCode.filter(e=>!e.formatCode)
+        }else{
+            dataCode = controller.dataCode
+        }
+        if(this.keySearchCode){
+            
+            dataCode = dataCode.filter(e=>{
+                let name = controller.xoa_dau(e.name).toLowerCase().replaceAll(" ","")
+                let nameFormat = controller.xoa_dau(e.nameFormat).toLowerCase().replaceAll(" ","")
+                let price = controller.xoa_dau(e.price+'k').toLowerCase().replaceAll(" ","")
+                let formatCode = controller.xoa_dau(e.formatCode + '').toLowerCase().replaceAll(" ","")
+                let limit =controller.xoa_dau(e.limit + '').toLowerCase().replaceAll(" ","")
+                return name.match(controller.keySearchCode) ||
+                       nameFormat.match(controller.keySearchCode) ||
+                       price.match(controller.keySearchCode) ||
+                       formatCode.match(controller.keySearchCode) ||
+                       limit.match(controller.keySearchCode) 
+
+            })
+        }
+        let mapTr = `<tr>
+                        <th class="th-id">ID</th>
+                        <th class="th-product">Product</th>
+                        <th class="th-code">Code (${dataCode.length})</th>
+                        <th class="th-price">Price</th>
+                        <th class="th-fromat">Fromat <i class="fa-solid fa-filter" id="filter-format"></i> </th>
+                        <th class="th-limit d-none">Limit</th>
+                    </tr>`
+      
+        for(let i = 0; i <dataCode.length; i++){ 
+            mapTr+=`<tr>
+                        <td> ${i+1} </td>
+                        <td> ${dataCode[i].name} </td>
+                        <td>  ${dataCode[i].nameFormat} </td>
+                        <td> ${dataCode[i].price}k </td>
+                        <td> ${dataCode[i].formatCode || false} </td>
+                        <td class="d-none"> ${dataCode[i].limit || false} </td>
+                    </tr>`
+        }
+        tableCode.innerHTML = mapTr
+        
+    }
+    ,
+    formatCode(){
+
+        if(this.isformatCode && this.dataCode.length){
+            this.dataCode = this.dataCode.map(e=>{    
+                if(e===undefined) return e
+                let price = e.name.match(/( *\d+ *k)/) !=null ? e.name.toLowerCase().match(/( *\d+ *k)/)[0] : 0
+                price = price!=0 ? price.match(/\d+/)[0] - "0" : 0
+                return{
+                    ...e,
+                    price:  price,
+                }
+            })
+            controller.keyFormat = controller.keyWords
+            for(let i = 0; i <this.keyWords.length; i++) {     
+            let keyFormat =this.keyFormat[i].key.split(" *").join("")   
+                if(this.keyFormat[i].isNumber){   
+                    regExp = new RegExp(keyFormat+" *\\d+", "")
+                    this.dataCode = this.dataCode.map(obj => {
+                        let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replaceAll(" ",""): obj.nameFormat
+                        let formatCode = obj.nameFormat.length ==  obj.name.length ? false : true
+                        return {
+                            ...obj,
+                            nameFormat: nameFormat.toLowerCase(),
+                            formatCode: formatCode,
+                            limit: false
+                        }
+                    }) 
+                }else{
+                    regExp = new RegExp(keyFormat, "")
+                    this.dataCode = this.dataCode.map(obj => {
+                        let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replaceAll("  "," "): obj.nameFormat
+                        let formatCode = obj.nameFormat.length ==  obj.name.length ? false : true
+                        return {
+                            ...obj,
+                            nameFormat: nameFormat.toLowerCase(),
+                            formatCode: formatCode,
+                            limit: false
+                        }
+                    }) 
+                }
+            }
+            this.pendingCode = this.dataCode.filter(e=>!e.formatCode)
+            controller.renderDataSelectManager()
+            return 
+        }
+    ////////////////////////////////
+        this.dataCode = this.dataCode.filter(e=>e.length>0)
+        this.dataCode = this.dataCode.map(e=>{
+            e=e.filter((item)=> item!=undefined)           
+            return{
+                name : e[0],
+                nameFormat : this.xoa_dau(e[0]).toLowerCase(),
+                price : 0,
+                formatCode: false,
+            }
+        })
+       
+        controller.keyFormat = controller.keyWords
+        for(let i = 0; i <this.keyWords.length; i++) {     
+           let keyFormat =this.keyFormat[i].key.split(" *").join("")   
+            if(this.keyFormat[i].isNumber){   
+                regExp = new RegExp(keyFormat+" *\\d+", "")
+                this.dataCode = this.dataCode.map(obj => {
+                    let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replaceAll(" ",""): obj.nameFormat
+                    let formatCode = obj.nameFormat.length ==  obj.name.length ? false : true
+                    return {
+                        ...obj,
+                        nameFormat: nameFormat.toLowerCase(),
+                        formatCode: formatCode,
+                        limit: false
+                    }
+                }) 
+            }else{
+                regExp = new RegExp(keyFormat, "")
+                this.dataCode = this.dataCode.map(obj => {
+                    let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replaceAll("  "," "): obj.nameFormat
+                    let formatCode = obj.nameFormat.length ==  obj.name.length ? false : true
+                    return {
+                        ...obj,
+                        nameFormat: nameFormat.toLowerCase(),
+                        formatCode: formatCode,
+                        limit: false
+                    }
+                }) 
+            }
+        }
+        this.dataCode = this.dataCode.map(e=>{
+            let price = e.name.match(/( *\d+ *k)/) !=null ? e.name.match(/( *\d+ *k)/)[0] : 0
+            price = price!=0 ? price.match(/\d+/)[0] - "0" : 0
+            return{
+                ...e,
+                price:  price
+            }
+        })
+
+        this.pendingCode = this.dataCode.filter(e=>!e.formatCode)
+        
+    },
+    renderDataSelectManager(){
+        
+           let options = ''
+           for (let i=0; i<controller.dataCode.length; i++){
+               if(controller.dataCode[i].formatCode){
+                 options+= `<option value="${controller.dataCode[i].nameFormat}">${controller.dataCode[i].nameFormat}</option>\n`
+               } 
+           }
+           selectCode.innerHTML = options
+           selectCode.value = controller.selectManager
+           
+           let textM = controller.dataCode.find(e=>e.nameFormat==controller.selectManager)
+           if(textM){
+               let elTextM =document.querySelector(".mDescribe")
+               elTextM.innerHTML = `<p class="mDescribe"> <span> Describe:</span> ${textM.name} </p>`
+           }
+        
+           if(controller.customers.length){
+                let dataManager = controller.customers.filter(e=>{
+                    let arr = e.cartFormat.find(e=>e==controller.selectManager)    
+                    return  arr
+                   
+                })
+                dataManager=dataManager.map(e=> {
+                    return {
+                        ...e,
+                        check : true
+                    }
+                })
+            
+             
+                if(dataManager.length){
+                    let table = document.querySelector("#table-manage")
+                    let tableManager =`
+                                <tr>
+                                    <th class="mID">ID</th>
+                                    <th>UID</th>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th class="mKeep">All <input class="form-check-input" type="checkbox" id="selectAll" checked> </th>
+                                </tr>`
+                    for(let i = 0; i <dataManager.length; i++) {
+                        tableManager+=`
+                        <tr>
+                            <td>${i}</td>
+                            <td>${dataManager[i].UID}</td>
+                            <td>${dataManager[i].name}</td>
+                            <td>${dataManager[i].phone.join(" ")}</td>
+                            <td> <input class="form-check-input itemCus" type="checkbox" id="m${i}" checked></td>
+                        </tr>` 
+                    }
+                    table.innerHTML = tableManager
+                    let listInput = document.querySelectorAll(".itemCus")
+                    selectAll.addEventListener("click", function(){
+                        if(dataManager.length > 0){
+                            let isTrue = selectAll.checked
+                            listInput.forEach(e=>{
+                                e.checked = isTrue
+                                dataManager.forEach(e=>{
+                                    e.check = isTrue
+                                })
+                            })
+                        }
+       
+                    })
+                    listInput.forEach(e=>{
+                        e.addEventListener("change",function(e){
+                            index = e.target.id.match(/\d+/)[0]-''
+                            dataManager[index].check = e.target.checked
+                        })
+                    })   
+                    keepManagement.addEventListener("click", function(){
+                        let removeDtata=dataManager.filter(e=>e.check == false)
+                        dataManager = dataManager.filter(e=>e.check)
+                        controller.customers.forEach(e=>{
+                            removeDtata.forEach(i=>{
+                                if(e.UID==i.UID){
+                                    let index = e.cartFormat.indexOf(controller.selectManager)
+                                    e.cart.splice(index,1)
+                                    e.cartFormat.splice(index,1)
+                                    e.cartExport.splice(index,1)       
+                                    let table = document.querySelector("#table-manage")
+                                    let tableManager =`
+                                                <tr>
+                                                    <th class="mID">ID</th>
+                                                    <th>UID</th>
+                                                    <th>Name</th>
+                                                    <th>Phone</th>
+                                                    <th class="mKeep">All <input class="form-check-input" type="checkbox" id="selectAll" checked> </th>
+                                                </tr>`
+                                    for(let i = 0; i <dataManager.length; i++) {
+                                        tableManager+=`
+                                        <tr>
+                                            <td>${i}</td>
+                                            <td>${dataManager[i].UID}</td>
+                                            <td>${dataManager[i].name}</td>
+                                            <td>${dataManager[i].phone.join(" ")}</td>
+                                            <td> <input class="form-check-input itemCus" type="checkbox" id="m${i}" checked></td>
+                                        </tr>` 
+                                    }
+                                    table.innerHTML = tableManager
+                                    controller.renderDataViewTwo()
+                                }
+                            })
+                        })
+                    })
+                }
+              
+           }
+    }
+    ,
+    renderDataViewTwo(){
+        let dataView = this.customers.filter(e=> {
+            let UID = e.UID
+            let name = this.xoa_dau(e.name).toLowerCase()
+            let phone = this.xoa_dau(e.phone.join(' ')).toLowerCase()
+            let cartFormat = this.xoa_dau(e.cartFormat.join(' ')).toLowerCase()
+            return UID.match(this.keySearchView) ||
+                   name.match(this.keySearchView) ||
+                   phone.match(this.keySearchView)||
+                   cartFormat.match(this.keySearchView)
+        })  
+
+        if(dataView.length%10==0){
+            this.pages = dataView.length/10
+        }else{
+            this.pages = (dataView.length - dataView.length%10) / 10 + 1
+        }
+        document.querySelector(".curent-page").innerHTML = this.currentPage + "/" + this.pages
+        
+
+        let table = document.querySelector("#table-view")
+        mappTr = `  <tr>
+                        <th class="th-id">ID</th>
+                        <th class="th-uid">UID (${dataView.length})</th>
+                        <th class="th-name">Name</th>
+                        <th class="th-phone">Phone</th>
+                        <th>Cart</th>
+                    </tr>`
+        for(let i=10*(this.currentPage-1);i<10*(this.currentPage);i++){
+            if (dataView[i]==undefined) {
+                break
+            } 
+            let show = dataView[i].cartFormat.map(e=>{
+                return `
+                    <code class="${dataView[i].UID}" >${e.replaceAll(" ","")}  <div class="describe ${dataView[i].UID}"></div></code>
+                `
+            })
+            mappTr+= `<tr>
+                        <td>${i+1}</td>
+                        <td>${dataView[i].UID}</td>
+                        <td>${dataView[i].name}</td>
+                        <td>${dataView[i].phone.join(' ')}</td>
+                        <td class="show-all">${show.join()}</td>
+                     </tr>`
+        }
+        table.innerHTML = mappTr
+        
+    },
+    renderDataPending(){
+        if(this.pendingViews==undefined){
+            console.log('nodata')
+        }else{
+            let tablePending = document.getElementById("table-pending")
+            let mapTr = `
+            <tr>
+                <th class="th-id">ID</th>
+                <th class="th-uid">UID (${this.pendingViews.length})</th>
+                <th class="th-name">Name</th>
+                <th class="th-phone">Phone</th>
+                <th class="th-message">Message</th>
+            </tr>`
+            for(let i=0; i<this.pendingViews.length; i++){
+                mapTr +=  `<tr>
+                            <td>${i+1}</td>
+                            <td>${this.pendingViews[i].UID}</td>
+                            <td>${this.pendingViews[i].name}</td>
+                            <td>${this.pendingViews[i].phone}</td>
+                            <td class="show-all">${this.pendingViews[i].cart}<i class="fa-solid fa-trash-can" id="${i}"></i></td>
+                            
+                          </tr>`
+            }
+            tablePending.innerHTML = mapTr
+            
+        }
+        
+    },
+    ExportView(type, fn, dl) {
+        if(this.dataView.length==0){
+            alert("Chưa có dữ liệu để xuất")
+            return
+        }
+        let elt = document.createElement('table')
+        let dataExportView = `
+        <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Cart</th>
+        </tr>`
+        for (let i = 0; i < controller.customers.length; i++) {
+            dataExportView += `
+            <tr>
+                <td>${this.customers[i].name}</td>
+                <td>${this.customers[i].phone.join("  ")}</td>
+                <td>${this.customers[i].cartExport.join(" + ")}</td>
+            </tr>
+            `
+        }
+        elt.innerHTML = dataExportView
+
+        let wb = XLSX.utils.table_to_book(elt, {sheet:"Sheet JS"});
+        return dl ?
+            XLSX.write(wb, {bookType:type, bookSST:true, type: 'base64'}) :
+            XLSX.writeFile(wb, fn || ('Dữ Liệu Khách Hàng.' + (type || 'xlsx')));
+    },
+    ExportPending(type, fn, dl) {
+        if(this.pendingViews.length==0){
+            alert("Chưa có dữ liệu để xuất")
+            return
+        }
+        let elt = document.getElementById('table-pending');
+        let wb = XLSX.utils.table_to_book(elt, {sheet:"Sheet JS"});
+        return dl ?
+            XLSX.write(wb, {bookType:type, bookSST:true, type: 'base64'}) :
+            XLSX.writeFile(wb, fn || ('Chưa xử lý.' + (type || 'xlsx')));
+    },
+    ExportManager(type, fn, dl){
+        if(this.dataView.length==0) {
+            alert('Chưa có dữ liệu ')
+            return
+        }
+        let dataManager = controller.dataView.filter(e=>e.formatView)
+        let elTable = document.createElement('table');
+        let tableManager = `
+        <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Cart</th>
+        </tr>`
+        for (let i = 0; i <dataManager.length; i++){
+            tableManager += `
+            <tr>
+                <td>${dataManager[i].name}</td>
+                <td>${dataManager[i].phone}</td>
+                <td>${dataManager[i].cart}</td>
+            </tr>`
+        }
+        elTable.innerHTML = tableManager
+        let wb = XLSX.utils.table_to_book(elTable, {sheet:"Sheet JS"});
+        return dl ?
+            XLSX.write(wb, {bookType:type, bookSST:true, type: 'base64'}) :
+            XLSX.writeFile(wb, fn || ('Dữ Liệu Tổng.' + (type || 'xlsx')));   
+    }
+
+
+}
+
+controller.start()
