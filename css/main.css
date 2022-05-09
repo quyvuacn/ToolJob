@@ -252,6 +252,7 @@ md-content{
 }
 .select-code{
     min-width: 80px;
+    margin: 0 !important;
 }
 .save-code,.select-code{
     margin-left: 12px;

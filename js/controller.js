@@ -114,6 +114,11 @@ const controller ={
             controller.keySearchCode = controller.xoa_dau(keySearch).toLowerCase()
             controller.renderDataCode()
         })
+        // document.getElementById("search-manage").addEventListener("keyup", function(e){
+        //     keySearch = e.target.value.trim()
+        //     controller.keySearchManager = controller.xoa_dau(keySearch).toLowerCase()
+        //     controller.renderDataSelectManager()
+        // })
 
         document.querySelector("#table-view").addEventListener("mouseover",function(e){
             if(e.target.closest("code")){
@@ -541,8 +546,18 @@ const controller ={
                 let dataManager = controller.customers.filter(e=>{
                     let arr = e.cartFormat.find(e=>e==controller.selectManager)    
                     return  arr
-                   
                 })
+                if(this.keySearchManager){
+                    dataManager = dataManager.filter(e=>{
+                        let name = controller.xoa_dau(e.name).toLowerCase().replaceAll(" ","")
+                        let UID = controller.xoa_dau(e.UID+'k').toLowerCase().replaceAll(" ","")
+                        let phone = controller.xoa_dau(e.phone.join(' ')).toLowerCase().replaceAll(" ","")
+                        return name.match(controller.keySearchManager) ||
+                               UID.match(controller.keySearchManager) ||
+                               phone.match(controller.keySearchManager) 
+                    })
+                }
+                console.log(dataManager)
                 dataManager=dataManager.map(e=> {
                     return {
                         ...e,
