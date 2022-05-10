@@ -105,7 +105,7 @@ const controller ={
         })
         document.querySelector("#search-view").addEventListener("keyup", function(e){
             keySearch = e.target.value.trim()
-            this.currentPage = 1
+            controller.currentPage = 1
             controller.keySearchView = controller.xoa_dau(keySearch).toLowerCase()
             controller.renderDataViewTwo()  
         })
@@ -125,18 +125,29 @@ const controller ={
                 let keyTarget = e.target.closest("code")
                 let cartItem = keyTarget.firstChild.textContent
                 let describeItem = keyTarget.firstElementChild
-                let describe = controller.dataCode.find(e=>e.nameFormat.replaceAll(" ","") == cartItem.replaceAll(" ",""))
-                describe = describe.name
-                describeItem.innerHTML = `
-                <h3>Click to delete</h3>
-                <h4>Describe:</h4>
-                <p>${describe}</p>
-                `
+                let describe = controller.dataCode.find(e=>{
+                    return e.nameFormat.replaceAll(" ","") == cartItem.replaceAll(" ","")
+                })
+                if(describe){
+                    describe = describe.name
+                    describeItem.innerHTML = `
+                    <h3>Click to delete</h3>
+                    <h4>Describe:</h4>
+                    <p>${describe}</p>
+                    `
+                }else{
+                    describeItem.innerHTML = `
+                    <h3>Click to delete</h3>
+                    <h4>Describe:</h4>
+                    <p>No data</p>
+                    `  
+                }
+               
                 keyTarget.addEventListener("click",function(){
                     let UID = keyTarget.className
                     controller.customers = controller.customers.map(e=>{
                         if(e.UID == UID){
-                            let index = e.cartFormat.indexOf(cartItem.replaceAll(" ",""))
+                            let index = e.cartFormat.indexOf(cartItem.replace(/[ ]+/g," "))
                             e.cart.splice(index,1)
                             e.cartFormat.splice(index,1)
                             e.cartExport.splice(index,1)
@@ -144,22 +155,137 @@ const controller ={
                         return e
                         
                     })
+
                     controller.renderDataViewTwo()
                 })
             }
         })
-        document.querySelector("#table-pending").addEventListener("click", function(e){
-            if(e.target.closest("i")){
-                removeKey = e.target.closest("i")-''
-                controller.pendingViews.splice(removeKey,1)
-                controller.renderDataPending()
 
-            }
-        })
         $('#selectCode').on('select2:select', function (e) {
             controller.selectManager =  e.params.data.text
             controller.renderDataSelectManager()
-        });
+        })
+        //Code tiep
+        document.querySelector("#table-pending").addEventListener("click", function (e) {
+            if(e.target.closest("i")){
+                removeKey = e.target.closest("i").id - ''
+                controller.pendingViews.splice(removeKey,1)
+                controller.renderDataPending()
+            }
+            AddToCart.innerHTML = ''
+            if(e.target.closest("td span")){
+                let index = e.target.closest("td").firstElementChild.id
+                let addCartTarget = e.target.closest("td span")
+                let UID = addCartTarget.id.match(/\d+/)[0]
+
+                ListTargetCus = controller.pendingViews.map(e=>{
+                    return{
+                        ...e,
+                        cart : [...e.cart],
+                        phone : [...e.phone]
+                    }
+                })
+
+                let targetCus = controller.customers.find(e=>e.UID==UID)
+                let isExist = true
+                if(!targetCus){
+                    targetCus = ListTargetCus.find(e=>e.UID==UID)
+                    isExist = false
+                } 
+             
+                let sCurentCart =''
+                if(targetCus.cartFormat){
+                    targetCus.cartFormat.forEach(e=>{
+                        sCurentCart+= `<code>${e}</code>`
+                    })
+                }                
+                $("#overlay").show()
+
+                infoUID.innerHTML = `UID : <span>${targetCus.UID}</span> `
+                infoName.innerHTML = `Name : <span>${targetCus.name}</span>`
+                infoPhone.innerHTML = `Phone : <span>${targetCus.phone.join(" ")}</span>`
+                curentCart.innerHTML = sCurentCart
+                let selectOption = ''
+              
+                controller.dataCode.forEach(e=>{
+                    selectOption += `<option value="${e.nameFormat}">${e.nameFormat}</option>`
+                })
+                addToCart.innerHTML = selectOption
+
+                let arrAdd = new Set()
+                $('#addToCart').on('select2:select',function(e) {
+                    arrAdd.add(e.params.data.text)
+                    let viewArrAdd =''
+                    arrAdd.forEach((e,index)=>{
+                        viewArrAdd += `<div class="keyString itemKey" id="arr${index}">${e}</div>`
+                    })
+                    AddToCart.innerHTML = viewArrAdd
+                });
+                let one = document.querySelector("#btnAddToCart").addEventListener("click",function add(){
+                    let cartExport = []
+                    arrAdd.forEach(e=>{
+                        let itemCart = controller.dataCode.find(item=>item.nameFormat==e)
+                        cartExport.push(itemCart.name)
+                    })
+                    if(isExist){   
+                        controller.customers.forEach(el=>{     
+                            if(el.UID==UID){     
+                                el.cartFormat = [...el.cartFormat,...arrAdd]
+                                el.cartExport = [...el.cartExport,...cartExport]
+                                el.cartFormat = Array.from(new Set(el.cartFormat))
+                                el.cartExport = Array.from(new Set(el.cartExport))
+                            }
+                        })
+                        console.log(controller.customers)
+                        $("#overlay").hide()
+                        $(`#${index}`).click()
+                        controller.renderDataPending()
+                        controller.renderDataViewTwo()
+                    }else{
+                        controller.customers= [...controller.customers,{
+                            ...targetCus,
+                            cartFormat : [...arrAdd],
+                            cartExport : [...cartExport]
+                        }]
+
+                        console.log(controller.customers)
+                        $("#overlay").hide()
+                        $(`#${index}`).click()
+                        controller.renderDataPending()
+                        controller.renderDataViewTwo()
+                    }
+                },{ once: true })
+
+
+
+               
+                
+            }
+        },{ once: false })
+        document.querySelector("#overlay").addEventListener("click", function(e){
+            if(e.target.closest("#closePending") || !e.target.closest(".addCartTarget")){
+                $("#overlay").hide()
+            }
+        })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -257,7 +383,7 @@ const controller ={
         table.innerHTML = mappTr
     },
     xoa_dau(str) {
-        str = str.replace(/:|\.|\\|\/|,|:|;/g," ")
+        str = str.replace(/:|\.|\\|\/|,|:|;|\+/g," ")
         str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ|à̀|á|à̀|à/g, "a");
         str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ|à̀|á|à̀|à/g, "a");
         str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
@@ -278,13 +404,17 @@ const controller ={
     },
     formatKey(){
         controller.keyFormat = controller.keyWords
-        for(let i = 0; i <this.keyWords.length; i++) {     
-           let keyFormat =this.keyFormat[i].key.split(" *").join("") 
-            if(this.keyFormat[i].isNumber){        
+        for(let i = 0; i <this.keyWords.length; i++) {          
+            if(this.keyFormat[i].isNumber){    
+                let keyFormat =this.keyFormat[i].key.trim().split(" ").join(" *")     
                 regExp = new RegExp(keyFormat+" *\\d+", "")
                 this.dataView = this.dataView.map(obj => {
-                    let cartFormat = obj.cartFormat.match(regExp) !=null ? obj.cartFormat.match(regExp)[0].replaceAll(" ",""): obj.cartFormat
-                    let formatView = cartFormat.length !=  obj.cart.length ? true : false
+                    if(obj.formatView) {
+                        return obj
+                    }
+                    let cartFormat = obj.cartFormat.match(regExp) !=null ? obj.cartFormat.match(regExp)[0]: obj.cartFormat
+                 
+                    let formatView = cartFormat.trim().length !=  obj.cart.trim().length ? true : false
                     return {
                         ...obj,
                         cartFormat: cartFormat.toLowerCase(),
@@ -292,10 +422,15 @@ const controller ={
                     }
                 }) 
             }else{
+                // *[\w|\W]* *
+                let keyFormat =this.keyFormat[i].key.trim().split(" ").join(" *[\\w|\\W]* *") 
                 regExp = new RegExp(keyFormat, "")
                 this.dataView = this.dataView.map(obj => {
-                    let cartFormat = obj.cartFormat.match(regExp) !=null ? obj.cartFormat.match(regExp)[0].replaceAll("  "," "): obj.cartFormat    
-                    let formatView = cartFormat.length !=  obj.cart.length ? true : false
+                    if(obj.formatView) {
+                        return obj
+                    }
+                    let cartFormat = obj.cartFormat.match(regExp) !=null ? this.keyFormat[i].key : obj.cartFormat    
+                    let formatView = (cartFormat.length !=  obj.cart.length && obj.cartFormat.match(regExp) !=null) ? true : false
                     return {
                         ...obj,
                         cartFormat: cartFormat.toLowerCase(),
@@ -305,7 +440,37 @@ const controller ={
             }
         }
         this.pendingViews = this.dataView.filter(e=>!e.formatView)
+        this.formatPendingView()
         this.renderDataPending()
+    },
+    //Code tiep
+    formatPendingView(){
+        let ListUID = new Set()
+        this.pendingViews.forEach(e=>{
+            ListUID.add(e.UID)
+        })
+        ListUID = [...ListUID]
+        ListUID= ListUID.map(e=>{
+            return {
+                UID: e,
+                name:"",
+                phone: new Set(),
+                cart: new Set(),
+                cartFormat:[]
+            }
+        })
+        for (let index = 0; index < this.pendingViews.length; index++) {
+            const element = this.pendingViews[index]
+            for (let j=0;j<ListUID.length; j++) {
+                if(ListUID[j].UID==element.UID) {
+                    ListUID[j].name = element.name
+                    ListUID[j].phone.add(element.phone)
+                    ListUID[j].cart.add(element.cart)
+                }
+            }
+            
+        }
+        this.pendingViews = ListUID
     }
     ,
     formatArray(){ 
@@ -391,11 +556,11 @@ const controller ={
         if(this.keySearchCode){
             
             dataCode = dataCode.filter(e=>{
-                let name = controller.xoa_dau(e.name).toLowerCase().replaceAll(" ","")
-                let nameFormat = controller.xoa_dau(e.nameFormat).toLowerCase().replaceAll(" ","")
-                let price = controller.xoa_dau(e.price+'k').toLowerCase().replaceAll(" ","")
-                let formatCode = controller.xoa_dau(e.formatCode + '').toLowerCase().replaceAll(" ","")
-                let limit =controller.xoa_dau(e.limit + '').toLowerCase().replaceAll(" ","")
+                let name = controller.xoa_dau(e.name).toLowerCase()
+                let nameFormat = controller.xoa_dau(e.nameFormat).toLowerCase()
+                let price = controller.xoa_dau(e.price+'k').toLowerCase()
+                let formatCode = controller.xoa_dau(e.formatCode + '').toLowerCase()
+                let limit =controller.xoa_dau(e.limit + '').toLowerCase()
                 return name.match(controller.keySearchCode) ||
                        nameFormat.match(controller.keySearchCode) ||
                        price.match(controller.keySearchCode) ||
@@ -441,11 +606,14 @@ const controller ={
             })
             controller.keyFormat = controller.keyWords
             for(let i = 0; i <this.keyWords.length; i++) {     
-            let keyFormat =this.keyFormat[i].key.split(" *").join("")   
+            let keyFormat =this.keyFormat[i].key.trim().replace(/[ ]+/g," ")
                 if(this.keyFormat[i].isNumber){   
                     regExp = new RegExp(keyFormat+" *\\d+", "")
                     this.dataCode = this.dataCode.map(obj => {
-                        let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replaceAll(" ",""): obj.nameFormat
+                        if(obj.formatCode){
+                            return obj
+                        }
+                        let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0]: obj.nameFormat
                         let formatCode = obj.nameFormat.length ==  obj.name.length ? false : true
                         return {
                             ...obj,
@@ -455,9 +623,13 @@ const controller ={
                         }
                     }) 
                 }else{
+                    let keyFormat =this.keyFormat[i].key.trim()
                     regExp = new RegExp(keyFormat, "")
                     this.dataCode = this.dataCode.map(obj => {
-                        let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replaceAll("  "," "): obj.nameFormat
+                        if(obj.formatCode){
+                            return obj
+                        }
+                        let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replace(/[ ]+/g," "): obj.nameFormat
                         let formatCode = obj.nameFormat.length ==  obj.name.length ? false : true
                         return {
                             ...obj,
@@ -486,11 +658,11 @@ const controller ={
        
         controller.keyFormat = controller.keyWords
         for(let i = 0; i <this.keyWords.length; i++) {     
-           let keyFormat =this.keyFormat[i].key.split(" *").join("")   
+           let keyFormat =this.keyFormat[i].key
             if(this.keyFormat[i].isNumber){   
                 regExp = new RegExp(keyFormat+" *\\d+", "")
                 this.dataCode = this.dataCode.map(obj => {
-                    let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replaceAll(" ",""): obj.nameFormat
+                    let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replace(/[ ]+/g," "): obj.nameFormat
                     let formatCode = obj.nameFormat.length ==  obj.name.length ? false : true
                     return {
                         ...obj,
@@ -502,7 +674,7 @@ const controller ={
             }else{
                 regExp = new RegExp(keyFormat, "")
                 this.dataCode = this.dataCode.map(obj => {
-                    let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replaceAll("  "," "): obj.nameFormat
+                    let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replace(/[ ]+/g," "): obj.nameFormat
                     let formatCode = obj.nameFormat.length ==  obj.name.length ? false : true
                     return {
                         ...obj,
@@ -549,23 +721,21 @@ const controller ={
                 })
                 if(this.keySearchManager){
                     dataManager = dataManager.filter(e=>{
-                        let name = controller.xoa_dau(e.name).toLowerCase().replaceAll(" ","")
-                        let UID = controller.xoa_dau(e.UID+'k').toLowerCase().replaceAll(" ","")
-                        let phone = controller.xoa_dau(e.phone.join(' ')).toLowerCase().replaceAll(" ","")
+                        let name = controller.xoa_dau(e.name).toLowerCase().replace(/[ ]+/g," ")
+                        let UID = controller.xoa_dau(e.UID+'k').toLowerCase().replace(/[ ]+/g," ")
+                        let phone = controller.xoa_dau(e.phone.join(' ')).toLowerCase().replace(/[ ]+/g," ")
                         return name.match(controller.keySearchManager) ||
                                UID.match(controller.keySearchManager) ||
                                phone.match(controller.keySearchManager) 
                     })
                 }
-                console.log(dataManager)
                 dataManager=dataManager.map(e=> {
                     return {
                         ...e,
                         check : true
                     }
                 })
-            
-             
+              
                 if(dataManager.length){
                     let table = document.querySelector("#table-manage")
                     let tableManager =`
@@ -641,12 +811,24 @@ const controller ={
                             })
                         })
                     })
+                }else{
+                    let table = document.querySelector("#table-manage")
+                    let tableManager =`
+                                <tr>
+                                    <th class="mID">ID</th>
+                                    <th>UID</th>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th class="mKeep">All <input class="form-check-input" type="checkbox" id="selectAll" checked> </th>
+                                </tr>`
+                    table.innerHTML = tableManager         
                 }
               
            }
     }
     ,
     renderDataViewTwo(){
+        this.customers = this.customers.filter(e=>e.cartFormat.length)
         let dataView = this.customers.filter(e=> {
             let UID = e.UID
             let name = this.xoa_dau(e.name).toLowerCase()
@@ -663,9 +845,9 @@ const controller ={
         }else{
             this.pages = (dataView.length - dataView.length%10) / 10 + 1
         }
+        
         document.querySelector(".curent-page").innerHTML = this.currentPage + "/" + this.pages
         
-
         let table = document.querySelector("#table-view")
         mappTr = `  <tr>
                         <th class="th-id">ID</th>
@@ -680,7 +862,7 @@ const controller ={
             } 
             let show = dataView[i].cartFormat.map(e=>{
                 return `
-                    <code class="${dataView[i].UID}" >${e.replaceAll(" ","")}  <div class="describe ${dataView[i].UID}"></div></code>
+                    <code class="${dataView[i].UID}" >${e.replace(/[ ]+/g," ")}  <div class="describe ${dataView[i].UID}"></div></code>
                 `
             })
             mappTr+= `<tr>
@@ -712,8 +894,14 @@ const controller ={
                             <td>${i+1}</td>
                             <td>${this.pendingViews[i].UID}</td>
                             <td>${this.pendingViews[i].name}</td>
-                            <td>${this.pendingViews[i].phone}</td>
-                            <td class="show-all">${this.pendingViews[i].cart}<i class="fa-solid fa-trash-can" id="${i}"></i></td>
+                            <td>${[...this.pendingViews[i].phone].join("</br>")}</td>
+                            <td class="show-all">${[...this.pendingViews[i].cart].join("</br>")}
+                            <i class="fa-solid fa-trash-can" id="${i}"></i>
+                            <span class="fa-solid fa-cart-plus" id="add${this.pendingViews[i].UID}">
+                                <div class="addCartCustomer add${this.pendingViews[i].UID}">
+                                </div>
+                            </span>
+                            </td>
                             
                           </tr>`
             }
