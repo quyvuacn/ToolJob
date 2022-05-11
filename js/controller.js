@@ -166,8 +166,15 @@ const controller ={
             controller.selectManager =  e.params.data.text
             controller.renderDataSelectManager()
         })
-        //Code tiep
-        document.querySelector("#table-pending").addEventListener("click", function (e) {
+        
+        
+
+        overlay.addEventListener("click",function(e){
+            if(e.target.closest("#closePending") || !e.target.closest("#overlayForm")){
+                $("#overlay").hide()
+            }
+        });
+        const event = document.querySelector("#table-pending").addEventListener("click", function (e) {
             if(e.target.closest("i")){
                 removeKey = e.target.closest("i").id - ''
                 controller.pendingViews.splice(removeKey,1)
@@ -175,7 +182,6 @@ const controller ={
             }
             AddToCart.innerHTML = ''
             if(e.target.closest("td span")){
-                
                 let addCartTarget = e.target.closest("td span")
                 let UID = addCartTarget.id.match(/\d+/)[0]
 
@@ -239,12 +245,15 @@ const controller ={
                         
                 });
 
-                document.querySelector("#btnAddToCart").addEventListener("click",function add(){
+
+
+                function add(){
                     let cartExport = []
                     arrAdd.forEach(e=>{
                         let itemCart = controller.dataCode.find(item=>item.nameFormat==e)
                         cartExport.push(itemCart.name)
                     })
+
                     if(isExist){   
                         controller.customers.forEach(el=>{     
                             if(el.UID==UID){     
@@ -254,55 +263,33 @@ const controller ={
                                 el.cartExport = Array.from(new Set(el.cartExport))
                             }
                         })  
-                        controller.renderDataPending()
-                        controller.renderDataViewTwo()
                     }else{
-                        controller.customers= [...controller.customers,{
+                        if(controller.customers.find(e=>e.UID==UID)) return
+                        controller.customers.push({
                             ...targetCus,
                             cartFormat : [...arrAdd],
                             cartExport : [...cartExport]
-                        }]
-                        controller.renderDataPending()
-                        controller.renderDataViewTwo()
+                        })
                     }
+                   
+                    controller.renderDataViewTwo() 
                     $("#overlay").hide()
-                },{ once: true })
+                    document.querySelector("#btnAddToCart").removeEventListener("click",add)
+                    console.log(controller.customers.filter(e=>e.UID==UID))
+                }
 
-                overlay.addEventListener("click",function(e){
-                    if(e.target.closest("#closePending") || !e.target.closest("#overlayForm")){
-                        $("#overlay").hide()
-                    }
-                })
+                document.querySelector("#btnAddToCart").addEventListener("click",add,{ once: true })
+                return
 
             }
-        },{ once: false })
+
+            // $(".show-all span").click(function(){
+            //     console.log($(this))
+            // })
+
+        })
+
         
-       
-        
-        
-       
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     },
     addKey(){
         if(this.dataCode.length==0){
@@ -480,10 +467,24 @@ const controller ={
                     ListUID[j].phone.add(element.phone)
                     ListUID[j].cart.add(element.cart)
                 }
+                ListUID[j].phone.delete('')
             }
             
         }
         this.pendingViews = ListUID
+
+
+        this.pendingViews = this.pendingViews.filter(e=>{
+            let item = controller.customers.find(i=>i.UID==e.UID)
+            if(item || e.phone.size) {
+                return true
+            }else{
+                return false
+            }
+        })
+        console.log(this.pendingViews)
+
+
     }
     ,
     formatArray(){ 
@@ -553,7 +554,12 @@ const controller ={
                
             }
                
-            this.customers = this.customers.filter(e=>e.cartFormat.length>0)
+            this.customers = this.customers.filter(e=>{
+                e.phone = e.phone.filter(i=>i.length>0)
+                return e.cartFormat.length>0 && e.phone.length>0
+            })
+            console.log(this.customers)
+               
         }
         return this.dataView
     },

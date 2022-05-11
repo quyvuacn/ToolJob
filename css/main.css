@@ -342,6 +342,7 @@ md-content{
     margin-right: 8px;
 }
 #curentCart,#AddToCart{
+    flex-wrap: wrap;
     display:flex;
     overflow-y: scroll;
     width: 100%;
