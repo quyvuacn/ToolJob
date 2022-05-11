@@ -174,13 +174,17 @@ const controller ={
                 $("#overlay").hide()
             }
         });
+
         const event = document.querySelector("#table-pending").addEventListener("click", function (e) {
             if(e.target.closest("i")){
                 removeKey = e.target.closest("i").id - ''
                 controller.pendingViews.splice(removeKey,1)
                 controller.renderDataPending()
+                return 
             }
             AddToCart.innerHTML = ''
+            $("#overlay").show()
+
             if(e.target.closest("td span")){
                 let addCartTarget = e.target.closest("td span")
                 let UID = addCartTarget.id.match(/\d+/)[0]
@@ -206,7 +210,7 @@ const controller ={
                         sCurentCart+= `<div class="keyString itemKey">${e}</div>`
                     })
                 }                
-                $("#overlay").show()
+               
 
                 infoUID.innerHTML = `UID : <span>${targetCus.UID}</span> `
                 infoName.innerHTML = `Name : <span>${targetCus.name}</span>`
@@ -239,10 +243,7 @@ const controller ={
                             arr = [...arrAdd]
                             AddToCart.removeChild(e.target)
                         },{once: true})
-                    })
-
-
-                        
+                    })         
                 });
 
 
@@ -264,30 +265,28 @@ const controller ={
                             }
                         })  
                     }else{
-                        if(controller.customers.find(e=>e.UID==UID)) return
-                        controller.customers.push({
-                            ...targetCus,
-                            cartFormat : [...arrAdd],
-                            cartExport : [...cartExport]
-                        })
+                        if(!controller.customers.find(e=>e.UID==UID)) {
+                            controller.customers.push({
+                                ...targetCus,
+                                cartFormat : [...arrAdd],
+                                cartExport : [...cartExport]
+                            })
+                        }
+                        isExist = true
                     }
-                   
                     controller.renderDataViewTwo() 
                     $("#overlay").hide()
                     document.querySelector("#btnAddToCart").removeEventListener("click",add)
-                    console.log(controller.customers.filter(e=>e.UID==UID))
+                  
                 }
 
                 document.querySelector("#btnAddToCart").addEventListener("click",add,{ once: true })
                 return
 
             }
-
-            // $(".show-all span").click(function(){
-            //     console.log($(this))
-            // })
-
         })
+
+     
 
         
     },
@@ -306,8 +305,9 @@ const controller ={
             controller.keyWords =  controller.keyWords.filter(e=>e.key)
             controller.renderDataCode()
         }else{
-           console.log("key word đã tồn tại")
-        }    
+          alert("Keyword đã tồn tại")
+        }   
+         
         let innerKeys =""
         for(let i=0; i<controller.keyWords.length; i++){
             let className = controller.keyWords[i].isNumber == true ? "keyNum" : "keyString"
@@ -482,9 +482,6 @@ const controller ={
                 return false
             }
         })
-        console.log(this.pendingViews)
-
-
     }
     ,
     formatArray(){ 
@@ -557,9 +554,7 @@ const controller ={
             this.customers = this.customers.filter(e=>{
                 e.phone = e.phone.filter(i=>i.length>0)
                 return e.cartFormat.length>0 && e.phone.length>0
-            })
-            console.log(this.customers)
-               
+            }) 
         }
         return this.dataView
     },
@@ -899,9 +894,10 @@ const controller ={
     },
     renderDataPending(){
         if(this.pendingViews==undefined){
-            console.log('nodata')
+            alert("No Data")
         }else{
             let tablePending = document.getElementById("table-pending")
+
             let mapTr = `
             <tr>
                 <th class="th-id">ID</th>
@@ -924,12 +920,12 @@ const controller ={
                             </span>
                             </td>
                             
-                          </tr>`
+                            </tr>`
             }
             tablePending.innerHTML = mapTr
             
-        }
-        
+    
+        }     
     },
     ExportView(type, fn, dl) {
         if(this.dataView.length==0){
@@ -1000,8 +996,5 @@ const controller ={
             XLSX.write(wb, {bookType:type, bookSST:true, type: 'base64'}) :
             XLSX.writeFile(wb, fn || ('Dữ Liệu Tổng.' + (type || 'xlsx')));   
     }
-
-
 }
-
 controller.start()
