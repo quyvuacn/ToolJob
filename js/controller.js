@@ -233,6 +233,8 @@ const controller ={
                             AddToCart.removeChild(e.target)
                         },{once: true})
                     })
+
+
                         
                 });
 
@@ -387,7 +389,7 @@ const controller ={
                         <td>${i+1}</td>
                         <td>${dataView[i].UID}</td>
                         <td>${dataView[i].name}</td>
-                        <td>${dataView[i].phone.join(`  +  `)}</td>
+                        <td>${dataView[i].phone.join(`  `)}</td>
                         <td class="show-all">${show}</td>
                      </tr>`
         }
@@ -839,6 +841,7 @@ const controller ={
     }
     ,
     renderDataViewTwo(){
+
         this.customers = this.customers.filter(e=>e.cartFormat.length)
         let dataView = this.customers.filter(e=> {
             let UID = e.UID
@@ -934,11 +937,14 @@ const controller ={
             <th>Cart</th>
         </tr>`
         for (let i = 0; i < controller.customers.length; i++) {
+            let name = this.customers[i].name
+            let phone = this.customers[i].phone
+            let cartExport = this.customers[i].cartExport
             dataExportView += `
             <tr>
-                <td>${this.customers[i].name}</td>
-                <td>${this.customers[i].phone.join("  ")}</td>
-                <td>${this.customers[i].cartExport.join(" + ")}</td>
+                <td>${name}</td>
+                <td>${phone.join("  ")}</td>
+                <td>${cartExport.join("  ")}</td>
             </tr>
             `
         }
