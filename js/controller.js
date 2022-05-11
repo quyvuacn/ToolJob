@@ -947,7 +947,7 @@ const controller ={
             <tr>
                 <td>${name}</td>
                 <td>${phone.join("  ")}</td>
-                <td>${cartExport.join("  ")}</td>
+                <td>${cartExport.join(" + ")}</td>
             </tr>
             `
         }
