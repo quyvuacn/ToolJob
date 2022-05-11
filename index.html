@@ -5,7 +5,6 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="google-signin-client_id" content="692715087935-tqusbj5m2cgfsv9tcc3q116m05hu9n01.apps.googleusercontent.com">
   <title>Order Checker</title>
   <link rel="stylesheet" href="./css/style.css">
   <title>Demo</title>
@@ -22,10 +21,6 @@
   <script type="text/javascript" src="./js/sheet/FileSaver.js"></script>
 </head>
 <body>
-    <div class="g-signin2" data-onsuccess="onSignIn"></div>
-    <a href="#" onclick="signOut();">Sign out</a>
-
-    
     <md-toolbar class="md-whiteframe-1dp">
         <div class="md-toolbar-tools toolheader">
             <div class="md-title">Order Checker <span>by Quy Vu</span>
@@ -248,21 +243,7 @@
     </md-content>
    
 
-  <script>
-      function onSignIn(googleUser) {
-        var profile = googleUser.getBasicProfile();
-        console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-        console.log('Name: ' + profile.getName());
-        console.log('Image URL: ' + profile.getImageUrl());
-        console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-        }
-        function signOut() {
-        var auth2 = gapi.auth2.getAuthInstance();
-        auth2.signOut().then(function () {
-        console.log('User signed out.');
-        });
-    }
-  </script>
+  
   
   
 </body>
