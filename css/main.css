@@ -342,6 +342,7 @@ md-content{
     margin-right: 8px;
 }
 #curentCart,#AddToCart{
+    display:flex;
     overflow-y: scroll;
     width: 100%;
     height: 80px;
@@ -369,6 +370,7 @@ md-content{
     flex-wrap: wrap;
 }
 #AddToCart .itemKey{
+    justify-content: center;
     cursor: default;
     height: 36px;
     align-items: center;
@@ -381,7 +383,9 @@ md-content{
     margin-bottom: 8px;
     background-color: #42C2FF;
 }
-#curentCart code{
+#curentCart .itemKey{
+    padding: 4px;
+    height: 36px;
     border-radius: 4px;
     margin-right: 8px;
     margin-bottom: 8px;
@@ -389,5 +393,6 @@ md-content{
     color: #fff
 }
 .itemKey{
+    text-align: center;
     min-width: 40px;
 }

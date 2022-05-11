@@ -66,9 +66,9 @@ const controller ={
             }else{
                 if(controller.pendingCode>0){
                     alert("Chưa nhập hết các từ khóa")
-                    return 
                 }
                 alert("Chưa có dữ liệu về các từ khóa hoặc mặt hàng")
+                return 
             }
             controller.renderDataSelectManager()
         })
@@ -78,6 +78,7 @@ const controller ={
                 controller.isformatCode =true
             }else{
                 alert("Các từ khóa tìm kiếm chưa được thêm vào hoặc chưa tải lên file mặt hàng")
+                return
             }
         })
         btnAddKey.addEventListener("click", function(){
@@ -196,7 +197,7 @@ const controller ={
                 let sCurentCart =''
                 if(targetCus.cartFormat){
                     targetCus.cartFormat.forEach(e=>{
-                        sCurentCart+= `<code class="keyString itemKey">${e}</code>`
+                        sCurentCart+= `<div class="keyString itemKey">${e}</div>`
                     })
                 }                
                 $("#overlay").show()
@@ -268,10 +269,10 @@ const controller ={
                 },{ once: true })
 
                 overlay.addEventListener("click",function(e){
-                    if(e.target.closest("#closePending") || !e.target.closest("#overlayForm ")){
+                    if(e.target.closest("#closePending") || !e.target.closest("#overlayForm")){
                         $("#overlay").hide()
                     }
-                },{once:true})
+                })
 
             }
         },{ once: false })
