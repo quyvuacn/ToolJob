@@ -940,7 +940,7 @@ const controller ={
         for (let i = 0; i < controller.customers.length; i++) {
             let name = this.customers[i].name
             let phone = this.customers[i].phone
-            let cartExport = this.customers[i].cartExport
+            let cartExport = this.customers[i].cartExport.filter(e=>e.length)
             dataExportView += `
             <tr>
                 <td>${name}</td>
