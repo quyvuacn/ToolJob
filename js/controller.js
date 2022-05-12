@@ -36,10 +36,6 @@ const controller ={
     pages: null,
     selectManager : '',
     start: function(){   
-        
-        FB.getLoginStatus(function(response) {
-            statusChangeCallback(response);
-        });
         importCode.addEventListener("change", function(e){
             e.targetPage = "code"
             controller.fileReader(e)
