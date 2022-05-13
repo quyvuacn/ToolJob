@@ -246,9 +246,8 @@ const controller ={
                     })         
                 });
 
-
-
-                function add(){
+                controller.renderDataViewTwo()  
+                document.querySelector("#btnAddToCart").removeEventListener("click",function add(){
                     let cartExport = []
                     arrAdd.forEach(e=>{
                         let itemCart = controller.dataCode.find(item=>item.nameFormat==e)
@@ -274,15 +273,8 @@ const controller ={
                         }
                         isExist = true
                     }
-                    controller.renderDataViewTwo() 
-                    $("#overlay").hide()
-                    document.querySelector("#btnAddToCart").removeEventListener("click",add)
-                  
-                }
-
-                document.querySelector("#btnAddToCart").addEventListener("click",add,{ once: true })
-                return
-
+                    $("#overlay").hide()    
+                })
             }
         })
 
@@ -636,7 +628,7 @@ const controller ={
                         }
                     }) 
                 }else{
-                    let keyFormat =this.keyFormat[i].key.trim().replace(/  +/g," ")
+                    let keyFormat =this.keyFormat[i].key.trim().replace(/  +/g," ").split(" ").join(" *")
                     regExp = new RegExp(keyFormat, "")
                     this.dataCode = this.dataCode.map(obj => {
                         if(obj.formatCode){
