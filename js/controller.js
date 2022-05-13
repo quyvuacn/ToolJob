@@ -183,9 +183,10 @@ const controller ={
                 return 
             }
             AddToCart.innerHTML = ''
-            $("#overlay").show()
+            
 
             if(e.target.closest("td span")){
+                $("#overlay").show()
                 let addCartTarget = e.target.closest("td span")
                 let UID = addCartTarget.id.match(/\d+/)[0]
 
@@ -246,8 +247,9 @@ const controller ={
                     })         
                 });
 
-                controller.renderDataViewTwo()  
-                document.querySelector("#btnAddToCart").removeEventListener("click",function add(){
+
+
+                function add(){
                     let cartExport = []
                     arrAdd.forEach(e=>{
                         let itemCart = controller.dataCode.find(item=>item.nameFormat==e)
@@ -273,8 +275,15 @@ const controller ={
                         }
                         isExist = true
                     }
-                    $("#overlay").hide()    
-                })
+                    controller.renderDataViewTwo() 
+                    $("#overlay").hide()
+                    document.querySelector("#btnAddToCart").removeEventListener("click",add)
+                  
+                }
+
+                document.querySelector("#btnAddToCart").addEventListener("click",add,{ once: true })
+                return
+
             }
         })
 
@@ -399,6 +408,7 @@ const controller ={
         controller.keyFormat = controller.keyWords
         for(let i = 0; i <this.keyWords.length; i++) {          
             if(this.keyFormat[i].isNumber){    
+                let key = this.keyFormat[i].key
                 let keyFormat =this.keyFormat[i].key.trim().split(" ").join(" *")     
                 regExp = new RegExp(keyFormat+" *\\d+", "")
                 this.dataView = this.dataView.map(obj => {
@@ -407,6 +417,7 @@ const controller ={
                     }
                     let cartFormat = obj.cartFormat.match(regExp) !=null ? obj.cartFormat.match(regExp)[0]: obj.cartFormat
                     let formatView = obj.cartFormat.match(regExp) !=null ? true : false
+                    cartFormat = cartFormat.replace(key,key+" ").replace(/  /g," ")
                     return {
                         ...obj,
                         cartFormat: cartFormat.toLowerCase(),
@@ -433,7 +444,7 @@ const controller ={
         }
         this.pendingViews = this.dataView.filter(e=>!e.formatView)
         this.formatPendingView()
-        this.renderDataPending()
+        // this.renderDataPending()
     },
     //Code tiep
     formatPendingView(){
@@ -528,10 +539,35 @@ const controller ={
                 }
                 for(let i = 0; i <this.customers.length; i++) {
                     this.customers[i].cartExport = this.customers[i].cartFormat.map(e=>{
-                        let cart = this.dataCode.filter(item=>item.nameFormat==e)
-                        return cart[0]
+                        let cart = this.dataCode.find(item=>item.nameFormat==e)
+                        if(!cart){
+                            let UID = this.customers[i].UID
+                            let name = this.customers[i].name
+                            let phone = this.customers[i].phone
+                            if(controller.pendingViews.find(item=>item.UID==UID)){
+                                controller.pendingViews.forEach(i=>{
+                                    if(i.UID==UID){
+                                        i.cart.add(e)
+                                    }
+                                })
+
+                            }else{
+                                let newcart = new Set ()
+                                let newphone = new Set (phone)
+                                newcart.add(e)
+                                controller.pendingViews.push({
+                                    UID:UID,
+                                    name:name,
+                                    phone: newphone,
+                                    cart : newcart
+                                })
+                            }
+                            
+                        }
+                        return cart 
                     })
-                    this.customers[i].cartExport = this.customers[i].cartExport.map(e=>{
+                    this.customers[i].cartExport = this.customers[i].cartExport.map((e)=>{
+                        
                         if(e  == undefined){
                             return 
                         }
@@ -548,7 +584,9 @@ const controller ={
                 return e.cartFormat.length>0 && e.phone.length>0
             }) 
         }
+        controller.renderDataPending()
         return this.dataView
+       
     },
     renderDataCode(){
         this.formatCode()
@@ -612,14 +650,17 @@ const controller ={
             controller.keyFormat = controller.keyWords
             for(let i = 0; i <this.keyWords.length; i++) {     
             let keyFormat =this.keyFormat[i].key.trim().replace(/  +/g," ")
-                if(this.keyFormat[i].isNumber){   
+                if(this.keyFormat[i].isNumber){ 
+                    let key = this.keyFormat[i].key
                     regExp = new RegExp(keyFormat+" *\\d+", "")
                     this.dataCode = this.dataCode.map(obj => {
                         if(obj.formatCode){
                             return obj
                         }
                         let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0]: obj.nameFormat
+                        nameFormat = nameFormat.replace(key,key+" ").replace(/  /g," ")
                         let formatCode = obj.nameFormat.match(regExp) !=null ? true : false
+                        
                         return {
                             ...obj,
                             nameFormat: nameFormat.toLowerCase(),
@@ -628,7 +669,7 @@ const controller ={
                         }
                     }) 
                 }else{
-                    let keyFormat =this.keyFormat[i].key.trim().replace(/  +/g," ").split(" ").join(" *")
+                    let keyFormat =this.keyFormat[i].key.trim().replace(/  +/g," ")
                     regExp = new RegExp(keyFormat, "")
                     this.dataCode = this.dataCode.map(obj => {
                         if(obj.formatCode){
@@ -668,8 +709,10 @@ const controller ={
             if(this.keyFormat[i].isNumber){   
                 regExp = new RegExp(keyFormat+" *\\d+", "")
                 this.dataCode = this.dataCode.map(obj => {
+                    
                     let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replace(/  +/g," "): obj.nameFormat
                     let formatCode = obj.nameFormat.match(regExp) !=null ? true : false
+                    
                     return {
                         ...obj,
                         nameFormat: nameFormat.toLowerCase(),
@@ -683,6 +726,7 @@ const controller ={
                 this.dataCode = this.dataCode.map(obj => {
                     let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replace(/  +/g," "): obj.nameFormat
                     let formatCode = obj.nameFormat.match(regExp) !=null ? true : false
+                    console.log(obj.nameFormat,nameFormat)
                     return {
                         ...obj,
                         nameFormat: nameFormat.toLowerCase(),
@@ -691,6 +735,7 @@ const controller ={
                     }
                 }) 
             }
+            
         }
         this.dataCode = this.dataCode.map(e=>{
             let price = e.name.match(/( *\d+ *k)/) !=null ? e.name.match(/( *\d+ *k)/)[0] : 0
