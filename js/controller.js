@@ -132,33 +132,16 @@ const controller ={
                 if(describe){
                     describe = describe.name
                     describeItem.innerHTML = `
-                    <h3>Click to delete</h3>
                     <h4>Describe:</h4>
                     <p>${describe}</p>
                     `
                 }else{
                     describeItem.innerHTML = `
-                    <h3>Click to delete</h3>
                     <h4>Describe:</h4>
                     <p>No data</p>
                     `  
                 }
                
-                keyTarget.addEventListener("click",function(){
-                    let UID = keyTarget.className
-                    controller.customers = controller.customers.map(e=>{
-                        if(e.UID == UID){
-                            let index = e.cartFormat.indexOf(cartItem.replace(/  +/g," "))
-                            e.cart.splice(index,1)
-                            e.cartFormat.splice(index,1)
-                            e.cartExport.splice(index,1)
-                        }
-                        return e
-                        
-                    })
-
-                    controller.renderDataViewTwo()
-                })
             }
         })
 
@@ -433,7 +416,7 @@ const controller ={
                         return obj
                     }
                     let cartFormat = obj.cartFormat.match(regExp) !=null ? this.keyFormat[i].key : obj.cartFormat    
-                    let formatView = obj.cartFormat.match(regExp) !=null ? true : false
+                    let formatView = obj.cartFormat.match(regExp) !=null ? true : false                    
                     return {
                         ...obj,
                         cartFormat: cartFormat.toLowerCase(),
@@ -524,8 +507,10 @@ const controller ={
                     UID = cartCustomer[j].UID
                     name = cartCustomer[j].name   
                     phone.add(cartCustomer[j].phone)
+
+                    
                     cart.add(cartCustomer[j].cart)
-                    cartFormat.add(cartCustomer[j].cartFormat)
+                    cartFormat.add(cartCustomer[j].cartFormat.trim().replace(/  /g," "))
                     if(j==cartCustomer.length-1){
                         this.customers[i] = {
                             UID : UID,
@@ -537,47 +522,58 @@ const controller ={
                         }
                     }
                 }
-                for(let i = 0; i <this.customers.length; i++) {
-                    this.customers[i].cartExport = this.customers[i].cartFormat.map(e=>{
-                        let cart = this.dataCode.find(item=>item.nameFormat==e)
-                        if(!cart){
-                            let UID = this.customers[i].UID
-                            let name = this.customers[i].name
-                            let phone = this.customers[i].phone
-                            if(controller.pendingViews.find(item=>item.UID==UID)){
-                                controller.pendingViews.forEach(i=>{
-                                    if(i.UID==UID){
-                                        i.cart.add(e)
-                                    }
-                                })
-
-                            }else{
-                                let newcart = new Set ()
-                                let newphone = new Set (phone)
-                                newcart.add(e)
-                                controller.pendingViews.push({
-                                    UID:UID,
-                                    name:name,
-                                    phone: newphone,
-                                    cart : newcart
-                                })
-                            }
-                            
-                        }
-                        return cart 
-                    })
-                    this.customers[i].cartExport = this.customers[i].cartExport.map((e)=>{
-                        
-                        if(e  == undefined){
-                            return 
-                        }
-                        return e.name  
-                    })
-
-                }
-               
-               
+                 
             }
+
+            for(let i = 0; i <this.customers.length; i++) {
+                this.customers[i].cartExport = this.customers[i].cartFormat.map(e=>{
+                    let cart = this.dataCode.find(item=>item.nameFormat==e)
+                    if(!cart){
+                        let UID = this.customers[i].UID
+                        let name = this.customers[i].name
+                        let phone = this.customers[i].phone
+                        if(controller.pendingViews.find(item=>item.UID==UID)){
+                            controller.pendingViews.forEach(i=>{
+                                if(i.UID==UID){
+                                    i.cart.add(e)
+                                }
+                            })
+
+                        }else{
+                            let newcart = new Set ()
+                            let newphone = new Set (phone)
+                            newcart.add(e)
+                            controller.pendingViews.push({
+                                UID:UID,
+                                name:name,
+                                phone: newphone,
+                                cart : newcart
+                            })
+                        }
+                        
+                    }
+                    return cart 
+                })
+                this.customers[i].cartFormat = this.customers[i].cartFormat.map(e=>{
+                    if(!controller.dataCode.find(item=>item.nameFormat==e)){
+                        return ""
+                    }
+                    return e
+                })
+                this.customers[i].cartFormat = this.customers[i].cartFormat.filter(e=>e.length)
+
+                this.customers[i].cartExport = this.customers[i].cartExport.map((e)=>{
+                    if(e  == undefined){
+                        return ''
+                    }
+                    
+                    return e.name  
+                })
+
+
+            }
+
+
                
             this.customers = this.customers.filter(e=>{
                 e.phone = e.phone.filter(i=>i.length>0)
@@ -640,7 +636,7 @@ const controller ={
         if(this.isformatCode && this.dataCode.length){
             this.dataCode = this.dataCode.map(e=>{    
                 if(e===undefined) return e
-                let price = e.name.match(/( *\d+ *k)/) !=null ? e.name.toLowerCase().match(/( *\d+ *k)/)[0] : 0
+                let price = e.name.match(/( *\d+ *[k|K])/) !=null ? e.name.toLowerCase().match(/( *\d+ *k)/)[0] : 0
                 price = price!=0 ? price.match(/\d+/)[0] - "0" : 0
                 return{
                     ...e,
@@ -726,7 +722,6 @@ const controller ={
                 this.dataCode = this.dataCode.map(obj => {
                     let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replace(/  +/g," "): obj.nameFormat
                     let formatCode = obj.nameFormat.match(regExp) !=null ? true : false
-                    console.log(obj.nameFormat,nameFormat)
                     return {
                         ...obj,
                         nameFormat: nameFormat.toLowerCase(),

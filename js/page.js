@@ -46,7 +46,8 @@ $(document).ready(function(){
    $("#select-manage").click(function(){
     $(".tool").hide()
     $("#manage").show()
-})
+    })
+
 
 
 
