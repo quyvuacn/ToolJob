@@ -397,3 +397,14 @@ md-content{
     text-align: center;
     min-width: 40px;
 }
+#guide{
+    display: none;
+}
+#guide h4,#guide a{
+    margin: 24px 24px;
+}
+#guide img{
+    width: 50%;
+    margin-bottom: 80px !important;
+    margin: 0 auto;
+}

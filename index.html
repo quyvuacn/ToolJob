@@ -38,6 +38,7 @@
                 <li class="select" id="select-view">View</li>           
                 <li class="select" id="select-pending">Pending</li>
                 <li class="select" id="select-manage">Manage</li>
+                <li class="select" id="select-guide">Guide</li>
                 <li class="li-slide"></li>
             </ul>
         </md-card>
@@ -212,9 +213,24 @@
            
         </md-card>
 
-        <!-- <md-card id="guide" class="tool">
-                 
-        </md-card> -->
+        <md-card id="guide" class="tool">
+            <h4>Step 1: Tải lên file Mã đơn hàng gồm 1 cột duy nhất chứa tên sản phẩm trong mục Code. Bấm Format</h4>
+            <a href="./file/Mã đơn hàng.xlsx" download="Mã đơn hàng">File Mã đơn mẫu</a>
+            <h4>Step 2: Nhập đầy đủ các từ khóa tương ứng với các tên đơn hàng.Trong đó String là các đơn chỉ có các chữ cái. Còn Number là các đơn có chứa chữ số.VD:</h4>
+            <h4>Step 3: Sau khi nhập xong các từ khóa thì tải lên file bình luận khách hàng. Bấm Format</h4>
+            <a href="./file/Khách hàng.xlsx" download="Bình luận khách hàng">File tin nhắn mẫu</a>
+            <h4>Step 4: Xem phần Pending để kiểm tra các bình luận chưa được duyệt qua.Có thêm thêm đơn cho khách hàng ở mục này</h4>
+            <h4>Step 5: Phần Manage giúp ta giữ lại các đơn chốt cho khách.Nhấn Keep để giữ lại đơn cho khách đã chọn</h4>
+            <h4>Step 6: Export phần View về là file các mã đơn ta cần</h4>
+            
+            <img src="./file/Code.jpg" alt="">
+           
+            <img src="./file/demo1.jpg" alt="">
+            
+            <img src="./file/Mess.jpg" alt="">
+           
+            
+        </md-card>
 
 
 
@@ -229,7 +245,7 @@
                       <button type="button" class="btn btn-primary" id="btnAddToCart">Add</button>
                 </div>
                 <div class="infoCart">
-                   <h6 id="infoUID">UID</h6>
+                   <h4 id="infoUID">UID</h4>
                    <h6 id="infoName">Name</h6>
                    <h6 id="infoPhone">Phone</h6>
                    <h6 id="infoCurrent">Current :</h6>

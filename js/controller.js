@@ -105,13 +105,13 @@ const controller ={
             }
         })
         document.querySelector("#search-view").addEventListener("keyup", function(e){
-            keySearch = e.target.value.trim()
+            keySearch = e.target.value.trim().replace(/\*/g,"")
             controller.currentPage = 1
             controller.keySearchView = controller.xoa_dau(keySearch).toLowerCase()
             controller.renderDataViewTwo()  
         })
         document.querySelector("#search-code").addEventListener("keyup", function(e){
-            keySearch = e.target.value.trim()
+            keySearch = e.target.value.trim().replace(/\*/g,"")
             controller.keySearchCode = controller.xoa_dau(keySearch).toLowerCase()
             controller.renderDataCode()
         })

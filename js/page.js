@@ -43,10 +43,16 @@ $(document).ready(function(){
         $(".tool").hide()
         $("#pending").show()
     })
+
    $("#select-manage").click(function(){
     $(".tool").hide()
     $("#manage").show()
     })
+
+    $("#select-guide").click(function(){
+        $(".tool").hide()
+        $("#guide").show()
+        })
 
 
 
