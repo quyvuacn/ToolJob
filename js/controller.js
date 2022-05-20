@@ -401,8 +401,15 @@ const controller ={
                     let cartFormat = obj.cartFormat.match(regExp) !=null ? obj.cartFormat.match(regExp)[0]: obj.cartFormat
                     let formatView = obj.cartFormat.match(regExp) !=null ? true : false
                     cartFormat = cartFormat.replace(key,key+" ").replace(/  /g," ")
+                    let phone = cartFormat.match(/0\d{9}\b/)
+                    if(phone){
+                        if(!obj.phone){
+                            obj.phone = phone[0]
+                        }
+                        console.log(obj)
+                    }
                     cartFormat = cartFormat.replace(/0\d{9}\b/g,"")
-                   
+                    
                     return {
                         ...obj,
                         cartFormat: cartFormat.toLowerCase(),
@@ -420,7 +427,6 @@ const controller ={
                     let cartFormat = obj.cartFormat.match(regExp) !=null ? this.keyFormat[i].key : obj.cartFormat    
                     let formatView = obj.cartFormat.match(regExp) !=null ? true : false  
                     cartFormat = cartFormat.replace(/0\d{9}\b/g,"")
-                  
                     return {
                         ...obj,
                         cartFormat: cartFormat.toLowerCase(),
@@ -581,7 +587,7 @@ const controller ={
                
             this.customers = this.customers.filter(e=>{
                 e.phone = e.phone.filter(i=>i.length>0)
-                return e.cartFormat.length>0 && e.phone.length>0
+                return e.cartFormat.length>0 
             }) 
         }
         controller.renderDataPending()
@@ -712,7 +718,6 @@ const controller ={
                     
                     let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replace(/  +/g," "): obj.nameFormat
                     let formatCode = obj.nameFormat.match(regExp) !=null ? true : false
-                    nameFormat = nameFormat.replace(/0\d{9}\b/g,"")
                     console.log(obj)
                     return {
                         ...obj,
@@ -727,7 +732,6 @@ const controller ={
                 this.dataCode = this.dataCode.map(obj => {
                     let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replace(/  +/g," "): obj.nameFormat
                     let formatCode = obj.nameFormat.match(regExp) !=null ? true : false
-                    nameFormat = nameFormat.replace(/0\d{9}\b/g,"")
                     console.log(obj)
                     return {
                         ...obj,
