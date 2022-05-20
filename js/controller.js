@@ -987,20 +987,22 @@ const controller ={
         for (let i = 0; i < controller.customers.length; i++) {
             let name = this.customers[i].name
             let phone = this.customers[i].phone
+            controller.customers.cartExport = []
             
-            cartExport = []
             let cartFormat = this.customers[i].cartFormat
             cartFormat.forEach(e=>{
                 let ex = controller.dataCode.find(item=>item.nameFormat==e)
-                cartExport.push(ex.name)
-                
+                controller.customers.cartExport.push(ex.name) 
             })
+            
+            cartExport = controller.customers.cartExport
+            if(cartExport.length==0) continue
             dataExportView += `
             <tr>
                 <td>${name}</td>
                 <td>${phone.join("  ")}</td>
                 <td>${cartExport.join(" + ")}</td>
-                <td>${cartFormat.join("  ")}</td>
+                <td>${cartFormat.join(" + ")}</td>
             </tr>
             `
         }
