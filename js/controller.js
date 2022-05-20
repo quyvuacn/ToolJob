@@ -401,6 +401,8 @@ const controller ={
                     let cartFormat = obj.cartFormat.match(regExp) !=null ? obj.cartFormat.match(regExp)[0]: obj.cartFormat
                     let formatView = obj.cartFormat.match(regExp) !=null ? true : false
                     cartFormat = cartFormat.replace(key,key+" ").replace(/  /g," ")
+                    cartFormat = cartFormat.replace(/0\d{9}\b/g,"")
+                   
                     return {
                         ...obj,
                         cartFormat: cartFormat.toLowerCase(),
@@ -416,7 +418,9 @@ const controller ={
                         return obj
                     }
                     let cartFormat = obj.cartFormat.match(regExp) !=null ? this.keyFormat[i].key : obj.cartFormat    
-                    let formatView = obj.cartFormat.match(regExp) !=null ? true : false                    
+                    let formatView = obj.cartFormat.match(regExp) !=null ? true : false  
+                    cartFormat = cartFormat.replace(/0\d{9}\b/g,"")
+                  
                     return {
                         ...obj,
                         cartFormat: cartFormat.toLowerCase(),
@@ -655,8 +659,8 @@ const controller ={
                         }
                         let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0]: obj.nameFormat
                         nameFormat = nameFormat.replace(key,key+" ").replace(/  /g," ")
+                       
                         let formatCode = obj.nameFormat.match(regExp) !=null ? true : false
-                        
                         return {
                             ...obj,
                             nameFormat: nameFormat.toLowerCase(),
@@ -708,7 +712,8 @@ const controller ={
                     
                     let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replace(/  +/g," "): obj.nameFormat
                     let formatCode = obj.nameFormat.match(regExp) !=null ? true : false
-                    
+                    nameFormat = nameFormat.replace(/0\d{9}\b/g,"")
+                    console.log(obj)
                     return {
                         ...obj,
                         nameFormat: nameFormat.toLowerCase(),
@@ -722,6 +727,8 @@ const controller ={
                 this.dataCode = this.dataCode.map(obj => {
                     let nameFormat = obj.nameFormat.match(regExp) !=null ? obj.nameFormat.match(regExp)[0].replace(/  +/g," "): obj.nameFormat
                     let formatCode = obj.nameFormat.match(regExp) !=null ? true : false
+                    nameFormat = nameFormat.replace(/0\d{9}\b/g,"")
+                    console.log(obj)
                     return {
                         ...obj,
                         nameFormat: nameFormat.toLowerCase(),
@@ -744,8 +751,7 @@ const controller ={
         this.pendingCode = this.dataCode.filter(e=>!e.formatCode)
         
     },
-    renderDataSelectManager(){
-        
+    renderDataSelectManager(){      
            let options = ''
            for (let i=0; i<controller.dataCode.length; i++){
                if(controller.dataCode[i].formatCode){
@@ -823,16 +829,17 @@ const controller ={
                             dataManager[index].check = e.target.checked
                         })
                     })   
+
                     keepManagement.addEventListener("click", function(){
                         let removeDtata=dataManager.filter(e=>e.check == false)
                         dataManager = dataManager.filter(e=>e.check)
-                        controller.customers.forEach(e=>{
+                        controller.customers=controller.customers.map(e=>{
                             removeDtata.forEach(i=>{
                                 if(e.UID==i.UID){
                                     let index = e.cartFormat.indexOf(controller.selectManager)
                                     e.cart.splice(index,1)
                                     e.cartFormat.splice(index,1)
-                                    e.cartExport.splice(index,1)       
+                                    e.cartExport.splice(index,1)  
                                     let table = document.querySelector("#table-manage")
                                     let tableManager =`
                                                 <tr>
@@ -853,11 +860,14 @@ const controller ={
                                         </tr>` 
                                     }
                                     table.innerHTML = tableManager
+                                    
                                     controller.renderDataViewTwo()
                                 }
+                                
                             })
+                            return e
                         })
-                    })
+                    },{once: true})
                 }else{
                     let table = document.querySelector("#table-manage")
                     let tableManager =`
@@ -868,8 +878,11 @@ const controller ={
                                     <th>Phone</th>
                                     <th class="mKeep">All <input class="form-check-input" type="checkbox" id="selectAll" checked> </th>
                                 </tr>`
-                    table.innerHTML = tableManager         
+                    table.innerHTML = tableManager    
+                    
+                    controller.renderDataViewTwo()   
                 }
+
               
            }
     }
@@ -960,7 +973,7 @@ const controller ={
         }     
     },
     ExportView(type, fn, dl) {
-        if(this.dataView.length==0){
+        if(this.customers.length==0){
             alert("Chưa có dữ liệu để xuất")
             return
         }
@@ -974,12 +987,20 @@ const controller ={
         for (let i = 0; i < controller.customers.length; i++) {
             let name = this.customers[i].name
             let phone = this.customers[i].phone
-            let cartExport = this.customers[i].cartExport
+            
+            cartExport = []
+            let cartFormat = this.customers[i].cartFormat
+            cartFormat.forEach(e=>{
+                let ex = controller.dataCode.find(item=>item.nameFormat==e)
+                cartExport.push(ex.name)
+                
+            })
             dataExportView += `
             <tr>
                 <td>${name}</td>
                 <td>${phone.join("  ")}</td>
                 <td>${cartExport.join(" + ")}</td>
+                <td>${cartFormat.join("  ")}</td>
             </tr>
             `
         }
