@@ -408,7 +408,7 @@ const controller ={
                         }
                         console.log(obj)
                     }
-                    cartFormat = cartFormat.replace(/0\d{9}\b/g,"")
+                    cartFormat = cartFormat.replace(/0\d{9}\b/g,"").trim()
                     
                     return {
                         ...obj,
@@ -426,7 +426,7 @@ const controller ={
                     }
                     let cartFormat = obj.cartFormat.match(regExp) !=null ? this.keyFormat[i].key : obj.cartFormat    
                     let formatView = obj.cartFormat.match(regExp) !=null ? true : false  
-                    cartFormat = cartFormat.replace(/0\d{9}\b/g,"")
+                    cartFormat = cartFormat.replace(/0\d{9}\b/g,"").trim()
                     return {
                         ...obj,
                         cartFormat: cartFormat.toLowerCase(),
@@ -512,7 +512,6 @@ const controller ={
                 let cartFormat = new Set()
                 for (let j = 0; j <controller.dataView.length; j++) {
                     let UID
-                    let name
                     UID = this.customers[i].UID
                     name = this.customers[i].name   
                     if(controller.dataView[j].UID==UID)
