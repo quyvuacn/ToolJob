@@ -510,6 +510,22 @@ const controller ={
                 let phone  = new Set()
                 let cart = new Set()
                 let cartFormat = new Set()
+                for (let j = 0; j <controller.dataView.length; j++) {
+                    let UID
+                    let name
+                    UID = this.customers[i].UID
+                    name = this.customers[i].name   
+                    if(controller.dataView[j].UID==UID)
+                    phone.add(controller.dataView[j].phone)
+
+                    if(j==cartCustomer.length-1){
+                        this.customers[i] = {
+                            ...this.customers[i],
+                            UID : UID,
+                            phone : phone, 
+                        }
+                    }
+                }
 
                 for (let j = 0; j <cartCustomer.length; j++) {
                     let UID
@@ -534,7 +550,7 @@ const controller ={
                 }
                  
             }
-
+            
             for(let i = 0; i <this.customers.length; i++) {
                 this.customers[i].cartExport = this.customers[i].cartFormat.map(e=>{
                     let cart = this.dataCode.find(item=>item.nameFormat==e)
@@ -988,6 +1004,7 @@ const controller ={
             <th>Phone</th>
             <th>Cart</th>
         </tr>`
+        controller.customers = controller.customers.filter(e=>e.phone.length>0)
         for (let i = 0; i < controller.customers.length; i++) {
             let name = this.customers[i].name
             let phone = this.customers[i].phone
